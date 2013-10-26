@@ -8,8 +8,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.stream.Collectors;
 
 
 public class URLManager {
@@ -36,8 +36,8 @@ public class URLManager {
 		addNewURLs(newURLs);
 		log.info("Page: " + res.url + ", urls added to queue: " + newURLs.size());
 		
-		log.debug("Urls visited: " + urlsVisited.size());
-		log.debug("Urls to visit: " + urlsToVisit.size());
+		log.debug("Urls visited: {}", urlsVisited.size());
+		log.debug("Urls to visit: {}", urlsToVisit.size());
 		return newURLs;
 	}
 	
@@ -57,23 +57,20 @@ public class URLManager {
 	}
 
 	public Collection<String> filterURLs(Collection<String> urlList) {
-		Collection<String> filteredURLs = new HashSet<>();
-		log.debug("Pre filtering: " + urlList);
-		for (String u : urlList) {
-			if (crawlFilter.letsThrough(u)) {
-				filteredURLs.add(u);
-			}
-		}
-		log.debug("Post filtering: " + filteredURLs);
+        log.debug("Pre filtering: {}", urlList);
+
+        Collection<String> filteredURLs = urlList.parallelStream()
+                .filter(crawlFilter)
+                .collect(Collectors.<String>toList());
+
+		log.debug("Post filtering: {}", filteredURLs);
 		return filteredURLs;
 	}
 
 	public Collection<String> normalizeURLs(Collection<String> urlList, String baseUrl) {
-		Collection<String> normalizedURLs = new HashSet<>();
-		for (String u : urlList) {
-			normalizedURLs.add(normalize(u, baseUrl));
-		}
-		return normalizedURLs;
+		return urlList.parallelStream()
+                .map(url -> normalize(url, baseUrl))
+                .collect(Collectors.<String>toList());
 	}
 
 	public String normalize(String url, String baseUrl) {		
@@ -96,7 +93,7 @@ public class URLManager {
 		} catch (IllegalArgumentException e) {
 			log.warn("Normalization error. Skipping URL since it violates URL standards (RFC 2396). Base: " + baseUrl + ", url: " + url);
 		}
-		log.debug("Normalized url: " + url + " to: " + absoluteURL);
+		log.debug("Normalized url: {} to: {}", url, absoluteURL);
 		return absoluteURL;
 	}
 	

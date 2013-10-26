@@ -1,12 +1,12 @@
 package no.bekk.bekkopen.mightycrawler;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
 
 public class Storage {
 
@@ -42,7 +42,7 @@ public class Storage {
 		hostName = hostName.substring(0, hostName.indexOf("/") + 1);
 		
 		// Append a unique string based on the URL and time stamp
-		String timeStamp = "" + System.currentTimeMillis();
+		String timeStamp = String.valueOf(System.currentTimeMillis());
 		String fileName = hostName + Integer.toHexString(url.hashCode());
 		fileName = fileName + "-" + StringUtils.right(timeStamp, 4) + ".xml";
 		return fileName;

@@ -1,5 +1,6 @@
 package no.bekk.bekkopen.mightycrawler;
 
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.conn.scheme.PlainSocketFactory;
@@ -21,7 +22,7 @@ import java.util.concurrent.*;
 
 public class DownloadManager extends Thread {
 
-	private DefaultHttpClient httpClient;
+	private HttpClient httpClient;
 	private PoolingClientConnectionManager cm;
 
 	private ExecutorService workerService = null;
@@ -51,46 +52,23 @@ public class DownloadManager extends Thread {
 		u = new URLManager(c.crawlFilter);
 		p = new Parser(c.linkFilter);
 
-		HttpParams params = new BasicHttpParams();
-		HttpConnectionParams.setSoTimeout(params, c.responseTimeout * 1000);
-		HttpProtocolParams.setUserAgent(params, c.userAgent);
-        HttpProtocolParams.setContentCharset(params, "UTF-8");
+        httpClient = createHttpClient(c);
 		
-		SchemeRegistry schemeRegistry = new SchemeRegistry();
-		schemeRegistry.register(new Scheme("http", c.httpPort, PlainSocketFactory.getSocketFactory()));
-		schemeRegistry.register(new Scheme("https", 443, SSLSocketFactory.getSocketFactory()));
-		
-		cm = new PoolingClientConnectionManager(schemeRegistry);
-		cm.setMaxTotal(c.downloadThreads);
-		cm.setDefaultMaxPerRoute(c.downloadThreads);
-
-		httpClient = new DefaultHttpClient(cm, params);
-		
-		// TODO: enable compression support (zip, deflate)
-		httpClient.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
-		
-		if (c.useCookies) {
-			httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
-		} else {
-			httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.IGNORE_COOKIES);
-		}
-
 		workerService = Executors.newFixedThreadPool(c.downloadThreads);
 		completionService = new ExecutorCompletionService<>(workerService);
 
 		startTime = System.currentTimeMillis();
 	}
-	
-	public void addToQueue(Resource res) {
+
+    public void addToQueue(Resource res) {
 		completionService.submit(new DownloadWorker(httpClient, res, c));
-		log.debug("Added downloading of " + res.url + " to queue.");
+		log.debug("Added downloading of {} to queue.", res.url);
 	}
 
 	public void addToQueue(Collection<String> URLs, int recursionLevel) {
-		for (String url : URLs) {
-			Resource res = new Resource(url, recursionLevel);
-			addToQueue(res);
-		}
+        URLs.parallelStream()
+                .map(url -> new Resource(url, recursionLevel))
+                .forEach(this::addToQueue);
 	}
 	
 	public int getQueueSize() {
@@ -109,7 +87,7 @@ public class DownloadManager extends Thread {
 				if (result != null) {
 					Resource res = result.get();
 					log.info("Request for: " + res.url + " done.");
-					log.debug("Recursion level: " + res.recursionLevel);
+					log.debug("Recursion level: {}", res.recursionLevel);
 					processResource(res);
 				}
 			} catch (RejectedExecutionException ree) {
@@ -192,4 +170,30 @@ public class DownloadManager extends Thread {
 		
 		return false;
 	}
+
+    private HttpClient createHttpClient(Configuration c) {
+        HttpParams params = new BasicHttpParams();
+        HttpConnectionParams.setSoTimeout(params, c.responseTimeout * 1000);
+        HttpProtocolParams.setUserAgent(params, c.userAgent);
+        HttpProtocolParams.setContentCharset(params, "UTF-8");
+
+        SchemeRegistry schemeRegistry = new SchemeRegistry();
+        schemeRegistry.register(new Scheme("http", c.httpPort, PlainSocketFactory.getSocketFactory()));
+        schemeRegistry.register(new Scheme("https", 443, SSLSocketFactory.getSocketFactory()));
+
+        cm = new PoolingClientConnectionManager(schemeRegistry);
+        cm.setMaxTotal(c.downloadThreads);
+        cm.setDefaultMaxPerRoute(c.downloadThreads);
+
+        DefaultHttpClient client = new DefaultHttpClient(cm, params);
+        // TODO: enable compression support (zip, deflate)
+        client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
+
+        if (c.useCookies) {
+            client.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
+        } else {
+            client.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.IGNORE_COOKIES);
+        }
+        return client;
+    }
 }

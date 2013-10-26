@@ -1,14 +1,15 @@
 package no.bekk.bekkopen.mightycrawler;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IncludeExcludeFilter {
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class IncludeExcludeFilter implements Predicate<String>{
 	private Pattern includeFilter;
 	private Pattern excludeFilter;
 
@@ -38,7 +39,7 @@ public class IncludeExcludeFilter {
 	}
 	
 	public Collection<String> getMatches(String content) {
-		Collection<String> matchList = new HashSet<String>();
+		Collection<String> matchList = new HashSet<>();
 		Matcher matcher = includeFilter.matcher(content);
 		while (matcher.find()) {
 			int i=1;
@@ -51,4 +52,9 @@ public class IncludeExcludeFilter {
 		}
 		return matchList;
 	}
+
+    @Override
+    public boolean test(String s) {
+        return letsThrough(s);
+    }
 }

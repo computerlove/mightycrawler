@@ -1,12 +1,5 @@
 package no.bekk.bekkopen.mightycrawler;
 
-import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.concurrent.Callable;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -19,6 +12,13 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.Callable;
 
 public class DownloadWorker implements Callable<Resource> {
 	
@@ -40,7 +40,7 @@ public class DownloadWorker implements Callable<Resource> {
     public Resource call() {
     	HttpGet httpGet = new HttpGet(res.url);
         try {
-        	log.debug("Fetching " + res.url + ", delay = " + c.downloadDelay + " seconds.");
+        	log.debug("Fetching {}, delay = {} seconds.", res.url , c.downloadDelay);
         	Thread.sleep(c.downloadDelay * 1000);
 	    	
 			long startTime = System.currentTimeMillis();
@@ -49,9 +49,7 @@ public class DownloadWorker implements Callable<Resource> {
 			res.isVisited = true;
         	res.responseCode = response.getStatusLine().getStatusCode();
 			
-			if (res.responseCode == HttpStatus.SC_TEMPORARY_REDIRECT ||
-				res.responseCode == HttpStatus.SC_MOVED_PERMANENTLY ||
-				res.responseCode == HttpStatus.SC_MOVED_TEMPORARILY) {
+			if (isRedirect()) {
 
 				Header newLocation = response.getFirstHeader("Location");
 				String newUrl = newLocation.getValue();
@@ -92,19 +90,21 @@ public class DownloadWorker implements Callable<Resource> {
             res.wasError = true;
             res.responseCode = HttpStatus.SC_REQUEST_TIMEOUT;
             log.warn("Timeout (" + c.responseTimeout + " seconds) reached when requesting: " + res.url + ", " + ste);
-        } catch (IllegalStateException ise) {
+        } catch (IllegalStateException | IOException ise) {
             httpGet.abort();
             res.wasError = true;
             log.warn("Aborted request for: " + res.url + ", " + ise);
-        } catch (IOException e) {
-            httpGet.abort();
-            res.wasError = true;
-            log.error("Aborted request for: " + res.url + ", " + e);
         }
         return res;
     }
-    
-	public Date parseTimestamp(Header dateHeader) {
+
+    private boolean isRedirect() {
+        return res.responseCode == HttpStatus.SC_TEMPORARY_REDIRECT ||
+            res.responseCode == HttpStatus.SC_MOVED_PERMANENTLY ||
+            res.responseCode == HttpStatus.SC_MOVED_TEMPORARILY;
+    }
+
+    private Date parseTimestamp(Header dateHeader) {
 		Date d = new Date();
 		if (dateHeader != null) {
 			SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);

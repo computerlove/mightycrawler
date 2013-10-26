@@ -1,18 +1,17 @@
 package no.bekk.bekkopen.mightycrawler;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+
 public class Crawler {
 
 	private Configuration config = null;
-	private DownloadManager download = null;
-	
-	static final Logger log = LoggerFactory.getLogger(Crawler.class);
+
+    static final Logger log = LoggerFactory.getLogger(Crawler.class);
 	
 	public void init(String propertiesFile) {
 		log.info("Starting up...");
@@ -27,12 +26,13 @@ public class Crawler {
 	}
 	
 	public void start() {
-		download = new DownloadManager(config);
+        DownloadManager download = new DownloadManager(config);
  		download.start();
- 		for (String url : config.startURLs) {
- 			Resource res = new Resource(url);
- 	 		download.addToQueue(res);			
- 		}
+
+        config.startURLs.stream()
+                .map(Resource::new)
+                .forEach(download::addToQueue);
+
  		while (!download.isTerminated()) {
  			try {
 				Thread.sleep(10000);

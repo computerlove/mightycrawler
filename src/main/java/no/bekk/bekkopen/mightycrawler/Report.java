@@ -25,8 +25,7 @@ import java.util.Set;
 public class Report {
 
 	private Driver hsqldbDriver = null;
-	private String connectionString = null;
-	private DataSource datasource = null;
+    private DataSource datasource = null;
 	
 	private String reportDirectory = null;
 	private Collection<String> reportSQL = null;
@@ -45,7 +44,7 @@ public class Report {
 				
 		File currentDir = new File("");
 		String dbPath =  currentDir.getAbsolutePath() + File.separator + c.databaseDirectory + "db";
-		connectionString = "jdbc:hsqldb:file:" + dbPath;
+        String connectionString = "jdbc:hsqldb:file:" + dbPath;
 
 		datasource = new JDBCDataSource();
 		((JDBCCommonDataSource)datasource).setUrl(connectionString);
