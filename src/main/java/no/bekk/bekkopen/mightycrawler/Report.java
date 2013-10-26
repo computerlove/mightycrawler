@@ -134,7 +134,7 @@ public class Report {
 		try {
 			DriverManager.deregisterDriver(hsqldbDriver);
         } catch (SQLException e) {
-			log.error("Could not deregister hsqldb driver: " + e.getMessage());
+			log.error("Could not deregister hsqldb driver: ", e);
         }
 	}	
 }
