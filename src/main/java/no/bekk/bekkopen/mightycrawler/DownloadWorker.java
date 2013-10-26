@@ -75,7 +75,7 @@ public class DownloadWorker implements Callable<Resource> {
         			}
     	    		res.content = EntityUtils.toString(entity);
 				} else {
-					log.debug("Did not get content from " + res.url + ", response code was " + res.responseCode);
+					log.debug("Did not get content from {}, response code was {}", res.url, res.responseCode);
 				}
 	        	EntityUtils.consume(entity);
 	    		res.isDownloaded = true;

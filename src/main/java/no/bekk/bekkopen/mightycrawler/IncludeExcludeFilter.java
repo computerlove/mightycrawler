@@ -24,16 +24,16 @@ public class IncludeExcludeFilter implements Predicate<String>{
 	public boolean letsThrough(String item) {
 		Matcher includeMatcher = includeFilter.matcher(item);
 	    if (includeMatcher.matches()) {
-    		log.debug("Item " + item + " matches the inclusion filter.");
+    		log.debug("Item {} matches the inclusion filter.", item);
 	    	Matcher excludeMatcher = excludeFilter.matcher(item);
 	    	if (!excludeMatcher.matches()) {
-	    		log.debug("Item " + item + " included as it matched the inclusion filter and did not match the exclusion filter.");
+	    		log.debug("Item {} included as it matched the inclusion filter and did not match the exclusion filter.", item);
 	    		return true;
 	    	} else {
-	    		log.debug("Item " + item + " excluded as it matched the exclusion filter.");
+	    		log.debug("Item {} excluded as it matched the exclusion filter.", item);
 	    	}
     	} else {
-    		log.debug("Item " + item + " excluded as it did not match the inclusion filter.");
+    		log.debug("Item {} excluded as it did not match the inclusion filter.", item);
     	}
 	    return false;
 	}

@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +28,6 @@ public class Report {
 	
 	private String reportDirectory = null;
 	private Collection<String> reportSQL = null;
-
-	
-	private SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	static final Logger log = LoggerFactory.getLogger(Report.class);
 
@@ -63,10 +59,9 @@ public class Report {
 	}
 
 	public void registerVisit(Resource res) {
-		String timeString = timeStampFormat.format(res.timeStamp);
 		// TODO: Escaping
 		write("INSERT INTO downloads (url, http_code, content_type, response_time, downloaded_at, downloaded) values (?,?,?,?,?,?)",
-				res.url, res.responseCode, res.contentType, res.responseTime, timeString, res.isDownloaded);				
+				res.url, res.responseCode, res.contentType, res.responseTime, res.timeStamp, res.isDownloaded);
 	}
 
 	public void registerOutboundLinks(String url, Collection<String> outlinks) {
@@ -125,7 +120,7 @@ public class Report {
 			log.error("Could not execute statement: " + e.getMessage());
 			log.error("SQL was: " + sql);
 		}
-		log.debug("Rows changed: " + updated);
+		log.debug("Rows changed: {}", updated);
 		return updated;
 	}
 	
