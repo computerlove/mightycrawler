@@ -1,17 +1,5 @@
 package no.bekk.bekkopen.mightycrawler;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.CookiePolicy;
 import org.apache.http.conn.scheme.PlainSocketFactory;
@@ -26,6 +14,10 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.*;
 
 public class DownloadManager extends Thread {
 
@@ -84,7 +76,7 @@ public class DownloadManager extends Thread {
 		}
 
 		workerService = Executors.newFixedThreadPool(c.downloadThreads);
-		completionService = new ExecutorCompletionService<Resource>(workerService);
+		completionService = new ExecutorCompletionService<>(workerService);
 
 		startTime = System.currentTimeMillis();
 	}

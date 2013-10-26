@@ -1,5 +1,15 @@
 package no.bekk.bekkopen.mightycrawler;
 
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.io.FileUtils;
+import org.hsqldb.jdbc.JDBCCommonDataSource;
+import org.hsqldb.jdbc.JDBCDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Driver;
@@ -11,17 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.sql.DataSource;
-
-import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.MapListHandler;
-import org.apache.commons.io.FileUtils;
-import org.hsqldb.jdbc.JDBCCommonDataSource;
-import org.hsqldb.jdbc.JDBCDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Report {
 
@@ -83,7 +82,7 @@ public class Report {
 		for (Map<String, Object> h : result) {
 			Set<Entry<String, Object>> entries = h.entrySet();
 			for (Entry<String, Object> e: entries) {
-    			out.append(e.getValue() + " ");
+    			out.append(e.getValue()).append(" ");
 			}
 			out.append("\n");
 		}

@@ -1,5 +1,10 @@
 package no.bekk.bekkopen.mightycrawler;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,15 +15,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 public class Configuration {
 
-	public Collection<String> startURLs = new ArrayList<String>();
+	public Collection<String> startURLs = new ArrayList<>();
 	public String includePattern = "";
 	public String excludePattern = "";
 
@@ -49,7 +49,7 @@ public class Configuration {
 	public String outputDirectory = "";
 	public String reportDirectory = "";
 
-	public Collection<String> reportSQL = new ArrayList<String>();
+	public Collection<String> reportSQL = new ArrayList<>();
 
 	public IncludeExcludeFilter crawlFilter;
 	public IncludeExcludeFilter extractFilter;
@@ -64,10 +64,8 @@ public class Configuration {
 		
 	public void init(String fileName) {
 		Properties p = new Properties();
-		FileReader fr = null;
 		String firstURL = null;
-		try {
-			fr = new FileReader(fileName);			
+		try (FileReader fr = new FileReader(fileName)){
 			p.load(fr);
 		
 			String start = p.getProperty("startURLs", "");
@@ -103,8 +101,8 @@ public class Configuration {
 			
 			userAgent = p.getProperty("userAgent", "");
 
-			useCookies = new Boolean(p.getProperty("useCookies", "true")).booleanValue();
-			followRedirects = new Boolean(p.getProperty("followRedirects", "true")).booleanValue();
+			useCookies = Boolean.valueOf(p.getProperty("useCookies", "true"));
+			followRedirects = Boolean.valueOf(p.getProperty("followRedirects", "true"));
 
 			downloadThreads = Integer.parseInt(p.getProperty("downloadThreads", "1"));
 				
@@ -117,13 +115,14 @@ public class Configuration {
 			responseTimeout = Integer.parseInt(p.getProperty("responseTimeout", "10"));		
 			crawlerTimeout = Integer.parseInt(p.getProperty("crawlerTimeout", "30"));
 
-			outputDirectory = p.getProperty("outputDirectory", System.getProperty("java.io.tmpdir"));
-			reportDirectory = p.getProperty("reportDirectory", System.getProperty("java.io.tmpdir"));
-			databaseDirectory = p.getProperty("databaseDirectory", System.getProperty("java.io.tmpdir"));
+            String tempDir = System.getProperty("java.io.tmpdir");
+            outputDirectory = p.getProperty("outputDirectory", tempDir);
+			reportDirectory = p.getProperty("reportDirectory", tempDir);
+			databaseDirectory = p.getProperty("databaseDirectory", tempDir);
 			
 			String sql = p.getProperty("reportSQL", "");
 			if (sql.length() == 0) {
-				reportSQL = new ArrayList<String>();
+				reportSQL = new ArrayList<>();
 			} else {
 				reportSQL = Arrays.asList(sql.split("\\|"));
 			}			
@@ -146,12 +145,6 @@ public class Configuration {
 			System.exit(1);
 		} catch (NumberFormatException nfe) {
 			log.error("Error reading configuration value: " + nfe);
-		} finally {
-			try {
-				if (fr != null) fr.close();
-			} catch (IOException ioe) {
-				log.error("Error closing configuration file: " + ioe.getMessage());
-			}
 		}
 	}	
 }

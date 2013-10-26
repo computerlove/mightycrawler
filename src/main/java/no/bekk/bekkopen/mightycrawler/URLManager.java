@@ -1,5 +1,9 @@
 package no.bekk.bekkopen.mightycrawler;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -7,15 +11,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 public class URLManager {
 
-	private LinkedHashSet<String> urlsToVisit = new LinkedHashSet<String>();
-	private LinkedHashSet<String> urlsVisited = new LinkedHashSet<String>();
+	private LinkedHashSet<String> urlsToVisit = new LinkedHashSet<>();
+	private LinkedHashSet<String> urlsVisited = new LinkedHashSet<>();
 	
 	private IncludeExcludeFilter crawlFilter;
 	
@@ -57,7 +57,7 @@ public class URLManager {
 	}
 
 	public Collection<String> filterURLs(Collection<String> urlList) {
-		Collection<String> filteredURLs = new HashSet<String>();
+		Collection<String> filteredURLs = new HashSet<>();
 		log.debug("Pre filtering: " + urlList);
 		for (String u : urlList) {
 			if (crawlFilter.letsThrough(u)) {
@@ -69,7 +69,7 @@ public class URLManager {
 	}
 
 	public Collection<String> normalizeURLs(Collection<String> urlList, String baseUrl) {
-		Collection<String> normalizedURLs = new HashSet<String>();
+		Collection<String> normalizedURLs = new HashSet<>();
 		for (String u : urlList) {
 			normalizedURLs.add(normalize(u, baseUrl));
 		}

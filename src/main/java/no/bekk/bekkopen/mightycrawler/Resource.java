@@ -17,12 +17,10 @@ public class Resource {
 	public long responseTime;
 	
 	public int recursionLevel = 0;
-	public Collection<String> urls = new LinkedHashSet<String>();
+	public Collection<String> urls = new LinkedHashSet<>();
 
 	public boolean isVisited = false;
 	public boolean isDownloaded = false;
-	public boolean isParsed = false;
-	public boolean isStored = false;
 
 	public boolean wasRedirect = false;
 	public boolean wasError = false;
