@@ -45,7 +45,6 @@ public class Configuration {
 	public int crawlerTimeout;
 
 	public String urlFile = "";
-	public String databaseDirectory = "";
 	public String outputDirectory = "";
 	public String reportDirectory = "";
 
@@ -57,8 +56,11 @@ public class Configuration {
 	public IncludeExcludeFilter storeFilter;
 	
 	static final Logger log = LoggerFactory.getLogger(Configuration.class);
-	
-	public Configuration(String filename) {
+    public String dbDriver;
+    public String dbConnectionString;
+    public boolean createReport;
+
+    public Configuration(String filename) {
 		init(filename);
 	}
 		
@@ -115,10 +117,14 @@ public class Configuration {
 			responseTimeout = Integer.parseInt(p.getProperty("responseTimeout", "10"));		
 			crawlerTimeout = Integer.parseInt(p.getProperty("crawlerTimeout", "30"));
 
-            String tempDir = System.getProperty("java.io.tmpdir");
+            String tempDir = System.getProperty("java.io.tmpdir") + "/mightycrawler";
             outputDirectory = p.getProperty("outputDirectory", tempDir);
-			reportDirectory = p.getProperty("reportDirectory", tempDir);
-			databaseDirectory = p.getProperty("databaseDirectory", tempDir);
+
+			reportDirectory = p.getProperty("reportDirectory", tempDir + "report");
+            createReport = Boolean.valueOf(p.getProperty("createReport", "true"));
+
+            dbDriver = p.getProperty("db.driver", "org.hsqldb.jdbcDriver");
+            dbConnectionString = p.getProperty("db.connectionString", "jdbc:hsqldb:file:database");
 			
 			String sql = p.getProperty("reportSQL", "");
 			if (sql.length() == 0) {

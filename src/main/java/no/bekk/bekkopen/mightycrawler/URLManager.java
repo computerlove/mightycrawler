@@ -73,15 +73,15 @@ public class URLManager {
                 .collect(Collectors.<String>toList());
 	}
 
-	public String normalize(String url, String baseUrl) {		
-		url = url.trim();
-		url = StringUtils.substringBeforeLast(url, "#");
-		url = StringUtils.substringBeforeLast(url, ";jsessionid");
+	public String normalize(String url, String baseUrl) {
+		String normalizedUrl = url.trim();
+		normalizedUrl = StringUtils.substringBeforeLast(normalizedUrl, "#");
+		normalizedUrl = StringUtils.substringBeforeLast(normalizedUrl, ";jsessionid");
 		
 		String absoluteURL = "";
 		try {
 			URI base = new URI(baseUrl);
-			URI fullUrl = base.resolve(url);
+			URI fullUrl = base.resolve(normalizedUrl);
 			absoluteURL = fullUrl.toString();
 			String query = fullUrl.getRawQuery();
 			if (query != null) {
@@ -93,7 +93,7 @@ public class URLManager {
 		} catch (IllegalArgumentException e) {
 			log.warn("Normalization error. Skipping URL since it violates URL standards (RFC 2396). Base: " + baseUrl + ", url: " + url);
 		}
-		log.debug("Normalized url: {} to: {}", url, absoluteURL);
+		log.debug("Normalized url: {} to: {}", normalizedUrl, absoluteURL);
 		return absoluteURL;
 	}
 	

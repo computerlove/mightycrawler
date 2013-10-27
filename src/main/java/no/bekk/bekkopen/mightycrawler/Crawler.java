@@ -17,9 +17,7 @@ public class Crawler {
 		log.info("Starting up...");
 		config = new Configuration(propertiesFile);
 		try {
-			FileUtils.deleteDirectory(new File(config.databaseDirectory));
 			FileUtils.deleteDirectory(new File(config.outputDirectory));
-			FileUtils.deleteDirectory(new File(config.reportDirectory));
 		} catch (IOException ioe) {
 			log.error("Could not empty directory: " + ioe);
 		}
