@@ -59,6 +59,7 @@ public class Configuration {
     public String dbDriver;
     public String dbConnectionString;
     public boolean createReport;
+    public boolean initDb;
 
     public Configuration(String filename) {
 		init(filename);

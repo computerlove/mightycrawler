@@ -22,7 +22,8 @@ import java.util.Set;
 
 public class Report {
 
-	private Driver dbDriver = null;
+    private String shutdownQuery;
+    private Driver dbDriver = null;
     private DataSource datasource = null;
 	
 	private String reportDirectory = null;
@@ -51,10 +52,13 @@ public class Report {
 			log.error("Could not instantiate database driver: " + e.getMessage());
 		}
 
-		write("DROP SCHEMA PUBLIC CASCADE");
-		write("SET DATABASE DEFAULT RESULT MEMORY ROWS 1000");
-		write("CREATE CACHED TABLE downloads ( url VARCHAR(4095), http_code INTEGER default 0, content_type VARCHAR(255), response_time INTEGER default 0, downloaded_at DATETIME default NOW, downloaded BOOLEAN)");
-		write("CREATE CACHED TABLE links ( url_from VARCHAR(4095), url_to VARCHAR(4095))");
+        if (c.initDb) {
+            write("DROP SCHEMA PUBLIC CASCADE");
+            write("SET DATABASE DEFAULT RESULT MEMORY ROWS 1000");
+            write("CREATE CACHED TABLE downloads ( url VARCHAR(4095), http_code INTEGER default 0, content_type VARCHAR(255), response_time INTEGER default 0, downloaded_at DATETIME default NOW, downloaded BOOLEAN)");
+            write("CREATE CACHED TABLE links ( url_from VARCHAR(4095), url_to VARCHAR(4095))");
+            shutdownQuery = "SHUTDOWN";
+        }
 
         createReport = c.createReport;
 	}
@@ -140,8 +144,10 @@ public class Report {
 	}
 	
 	public void shutDown(){
-		write("SHUTDOWN");
-		try {
+        if (shutdownQuery != null) {
+            write(shutdownQuery);
+        }
+        try {
 			DriverManager.deregisterDriver(dbDriver);
         } catch (SQLException e) {
 			log.error("Could not deregister hsqldb driver: ", e);
