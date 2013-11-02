@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -58,8 +59,10 @@ public class Configuration {
 	static final Logger log = LoggerFactory.getLogger(Configuration.class);
     public String dbDriver;
     public String dbConnectionString;
-    public boolean createReport;
     public boolean initDb;
+    public DataSource dataSource;
+    public boolean createReport;
+    public Long crawlerId;
 
     public Configuration(String filename) {
 		init(filename);
@@ -143,9 +146,8 @@ public class Configuration {
 			if (firstURL == null) {
 				log.info("List of URLs to crawl was empty. Aborting.");
 			} else {
-				log.error("Can not parse start URL. Aborting. Error was: " + mue);
+				log.error("Can not parse start URL. Aborting. Error was: " + mue.getMessage(), mue);
 			}
-			System.exit(1);
 		} catch (IOException ioe) {
 			System.err.println("\nError reading configuration file: " + ioe);
 			System.err.println("Aborting.");
@@ -153,6 +155,12 @@ public class Configuration {
 		} catch (NumberFormatException nfe) {
 			log.error("Error reading configuration value: " + nfe);
 		}
-	}	
+	}
+
+    public Configuration withDatasource(DataSource dataSource){
+        this.dataSource = dataSource;
+        this.initDb = false;
+        return this;
+    }
 }
 

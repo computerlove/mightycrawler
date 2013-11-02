@@ -31,6 +31,7 @@ public class Report {
 
 	static final Logger log = LoggerFactory.getLogger(Report.class);
     private boolean createReport;
+    private Long crawlerId;
 
     public Report(Configuration c) {
 		reportSQL = c.reportSQL;
@@ -39,18 +40,22 @@ public class Report {
 		log.info("Using database driver: " + c.dbDriver);
 		log.info("Using database dbConnectionString: " + c.dbConnectionString);
 		log.info("Using report directory: " + c.reportDirectory);
-				
-		datasource = new BoneCPDataSource();
-        ((BoneCPDataSource) datasource).setDriverClass(c.dbDriver);
-        ((BoneCPDataSource) datasource).setJdbcUrl(c.dbConnectionString);
+
+        if (c.dataSource == null) {
+            datasource = new BoneCPDataSource();
+            ((BoneCPDataSource) datasource).setDriverClass(c.dbDriver);
+            ((BoneCPDataSource) datasource).setJdbcUrl(c.dbConnectionString);
 
 
-		try {
-			dbDriver = (Driver) Class.forName(c.dbDriver).newInstance();
-			DriverManager.registerDriver(dbDriver);
-		} catch (Exception e) {
-			log.error("Could not instantiate database driver: " + e.getMessage());
-		}
+            try {
+                dbDriver = (Driver) Class.forName(c.dbDriver).newInstance();
+                DriverManager.registerDriver(dbDriver);
+            } catch (Exception e) {
+                log.error("Could not instantiate database driver: " + e.getMessage());
+            }
+        } else {
+            this.datasource = c.dataSource;
+        }
 
         if (c.initDb) {
             write("DROP SCHEMA PUBLIC CASCADE");
@@ -61,12 +66,13 @@ public class Report {
         }
 
         createReport = c.createReport;
+        crawlerId = c.crawlerId;
 	}
 
 	public void registerVisit(Resource res) {
 		// TODO: Escaping
-		write("INSERT INTO downloads (url, http_code, content_type, response_time, downloaded_at, downloaded) values (?,?,?,?,?,?)",
-				res.url, res.responseCode, res.contentType, res.responseTime, res.timeStamp, res.isDownloaded);
+		write("INSERT INTO downloads (crawl_id, url, http_code, content_type, response_time, downloaded_at, downloaded) values (?,?,?,?,?,?,?)",
+				crawlerId, res.url, res.responseCode, res.contentType, res.responseTime, res.timeStamp, res.isDownloaded);
 	}
 
 	public void registerOutboundLinks(String url, Collection<String> outlinks) {
@@ -74,7 +80,7 @@ public class Report {
         try {
             Object[][] params = createBatchParameters(url, outlinks);
             if (params.length > 0) {
-                run.batch("INSERT INTO links (url_from, url_to) values (?, ?)", params);
+                run.batch("INSERT INTO links (crawl_id, url_from, url_to) values (?, ?, ?)", params);
             }
         } catch (SQLException e) {
             log.error("Could not execute statement: ", e);
@@ -82,10 +88,10 @@ public class Report {
     }
 
     private Object[][] createBatchParameters(String url, Collection<String> outlinks) {
-        Object[][] params = new Object[outlinks.size()][2];
+        Object[][] params = new Object[outlinks.size()][3];
         int i = 0;
         for (String link: outlinks) {
-            params[i++] = new Object[]{url, link};
+            params[i++] = new Object[]{crawlerId, url, link};
         }
         return params;
     }
@@ -146,11 +152,11 @@ public class Report {
 	public void shutDown(){
         if (shutdownQuery != null) {
             write(shutdownQuery);
+            try {
+                DriverManager.deregisterDriver(dbDriver);
+            } catch (SQLException e) {
+                log.error("Could not deregister hsqldb driver: ", e);
+            }
         }
-        try {
-			DriverManager.deregisterDriver(dbDriver);
-        } catch (SQLException e) {
-			log.error("Could not deregister hsqldb driver: ", e);
-        }
-	}	
+	}
 }

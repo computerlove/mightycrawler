@@ -12,8 +12,14 @@ public class Crawler {
 	private Configuration config = null;
 
     static final Logger log = LoggerFactory.getLogger(Crawler.class);
-	
-	public void init(String propertiesFile) {
+
+    public Crawler() {}
+
+    public Crawler(Configuration config){
+        this.config = config;
+    }
+
+    public void init(String propertiesFile) {
 		log.info("Starting up...");
 		config = new Configuration(propertiesFile);
 		try {
