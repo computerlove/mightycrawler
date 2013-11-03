@@ -63,9 +63,12 @@ public class DownloadWorker implements Callable<Resource> {
 			
 	    	res.responseTime = System.currentTimeMillis() - startTime;
     		res.timeStamp = parseTimestamp(response.getFirstHeader("Date"));
+            Header pageType = response.getFirstHeader("PageType");
+            if (pageType != null) {
+                res.pageType = pageType.getValue();
+            }
 
-	    		
-        	HttpEntity entity = response.getEntity();
+            HttpEntity entity = response.getEntity();
         	if (entity != null) {        		
         		if (res.responseCode == HttpStatus.SC_OK) {
         			ContentType contentType = ContentType.getOrDefault(entity);

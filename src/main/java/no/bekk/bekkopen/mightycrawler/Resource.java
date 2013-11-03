@@ -24,8 +24,9 @@ public class Resource {
 
 	public boolean wasRedirect = false;
 	public boolean wasError = false;
-	
-	public Resource(String url) {
+    public String pageType;
+
+    public Resource(String url) {
 		this.url = url;
 	}
 	

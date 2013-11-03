@@ -60,7 +60,7 @@ public class Report {
         if (c.initDb) {
             write("DROP SCHEMA PUBLIC CASCADE");
             write("SET DATABASE DEFAULT RESULT MEMORY ROWS 1000");
-            write("CREATE CACHED TABLE downloads ( url VARCHAR(4095), http_code INTEGER default 0, content_type VARCHAR(255), response_time INTEGER default 0, downloaded_at DATETIME default NOW, downloaded BOOLEAN)");
+            write("CREATE CACHED TABLE downloads ( url VARCHAR(4095), http_code INTEGER default 0, content_type VARCHAR(255), page_type VARCHAR(255), response_time INTEGER default 0, downloaded_at DATETIME default NOW, downloaded BOOLEAN)");
             write("CREATE CACHED TABLE links ( url_from VARCHAR(4095), url_to VARCHAR(4095))");
             shutdownQuery = "SHUTDOWN";
         }
@@ -71,8 +71,8 @@ public class Report {
 
 	public void registerVisit(Resource res) {
 		// TODO: Escaping
-		write("INSERT INTO downloads (crawl_id, url, http_code, content_type, response_time, downloaded_at, downloaded) values (?,?,?,?,?,?,?)",
-				crawlerId, res.url, res.responseCode, res.contentType, res.responseTime, res.timeStamp, res.isDownloaded);
+		write("INSERT INTO downloads (crawl_id, url, http_code, content_type, page_type, response_time, downloaded_at, downloaded) values (?,?,?,?,?,?,?,?)",
+				crawlerId, res.url, res.responseCode, res.contentType, res.pageType, res.responseTime, res.timeStamp, res.isDownloaded);
 	}
 
 	public void registerOutboundLinks(String url, Collection<String> outlinks) {
