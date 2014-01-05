@@ -111,7 +111,7 @@ public class Configuration {
 			followRedirects = Boolean.valueOf(p.getProperty("followRedirects", "true"));
 
 			downloadThreads = Integer.parseInt(p.getProperty("downloadThreads", "1"));
-				
+
 			maxVisits = Integer.parseInt(p.getProperty("maxVisits", "1"));
 			maxDownloads = Integer.parseInt(p.getProperty("maxDownloads", "1"));
 			maxRecursion = Integer.parseInt(p.getProperty("maxRecursion", "1"));
