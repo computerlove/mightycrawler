@@ -9,10 +9,13 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
 public class URLManager {
+
+    private static final Pattern AMP_PATTERN = Pattern.compile("&amp;");
 
 	private LinkedHashSet<String> urlsToVisit = new LinkedHashSet<>();
 	private LinkedHashSet<String> urlsVisited = new LinkedHashSet<>();
@@ -86,7 +89,7 @@ public class URLManager {
 			String query = fullUrl.getRawQuery();
 			if (query != null) {
 				String beforeQuery = StringUtils.substringBefore(absoluteURL, query);
-				absoluteURL = beforeQuery + sortQueryParameters(query);
+				absoluteURL = beforeQuery + AMP_PATTERN.matcher(query).replaceAll("&");
 			}
 		} catch (URISyntaxException e) {
 			log.error("Normalization error. Skipping URL. Base url: " + baseUrl + " violates URL standards (RFC 2396).");
@@ -96,10 +99,5 @@ public class URLManager {
 		log.debug("Normalized url: {} to: {}", normalizedUrl, absoluteURL);
 		return absoluteURL;
 	}
-	
-	public String sortQueryParameters(String queryMap) {
-		String[] vars = queryMap.split("&");
-		Arrays.sort(vars);
-		return StringUtils.join(vars, "&");
-	}
+
 }
