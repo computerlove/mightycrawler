@@ -19,10 +19,12 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.regex.Pattern;
 
 public class DownloadManager extends Thread {
 
-	private HttpClient httpClient;
+    private static final Pattern AMP_PATTERN = Pattern.compile("&amp;");
+    private HttpClient httpClient;
 	private PoolingClientConnectionManager cm;
 
 	private ExecutorService workerService = null;
@@ -67,7 +69,7 @@ public class DownloadManager extends Thread {
 
 	public void addToQueue(Collection<String> URLs, int recursionLevel) {
         URLs.parallelStream()
-                .map(url -> new Resource(url, recursionLevel))
+                .map(url -> new Resource(AMP_PATTERN.matcher(url).replaceAll("&"), recursionLevel))
                 .forEach(this::addToQueue);
 	}
 	
